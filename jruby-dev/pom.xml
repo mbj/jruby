@@ -8,7 +8,7 @@
   <repositories>
     <repository>
       <id>localrepo</id>
-      <url>file:./localrepo</url>
+      <url>file:./../localrepo</url>
     </repository>
     <repository>
       <id>rubygems-releases</id>
@@ -40,7 +40,7 @@
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>readline</artifactId>
-      <version>1.7.5.dev</version>
+      <version>1.0-SNAPSHOT</version>
       <type>jar</type>
       <scope>provided</scope>
     </dependency>
@@ -228,8 +228,9 @@
     <tzdata.scope>provided</tzdata.scope>
   </properties>
   <build>
-    <sourceDirectory>src</sourceDirectory>
+<!--    <sourceDirectory>src</sourceDirectory>
     <outputDirectory>build/classes/jruby</outputDirectory>
+-->
     <testSourceDirectory>test</testSourceDirectory>
     <defaultGoal>package</defaultGoal>
     <plugins>
@@ -246,7 +247,7 @@
             </goals>
             <configuration>
               <files>
-                <file>${basedir}/default.build.properties</file>
+                <file>../default.build.properties</file>
                 <file>${basedir}/build.properties</file>
               </files>
               <quiet>true</quiet>
@@ -259,6 +260,7 @@
         <artifactId>build-helper-maven-plugin</artifactId>
         <version>1.8</version>
         <executions>
+<!--
           <execution>
             <id>add-generated-sources</id>
             <phase>generate-sources</phase>
@@ -271,9 +273,10 @@
               </sources>
             </configuration>
           </execution>
+-->
           <execution>
             <id>add-populators</id>
-            <phase>process-classes</phase>
+            <phase>compile</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
@@ -281,24 +284,6 @@
               <sources>
                 <source>${anno.sources}</source>
               </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>1.2</version>
-        <executions>
-          <execution>
-            <id>jruby-revision</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>create</goal>
-            </goals>
-            <configuration>
-              <shortRevisionLength>7</shortRevisionLength>
-              <buildNumberPropertyName>jruby.revision</buildNumberPropertyName>
             </configuration>
           </execution>
         </executions>
@@ -363,27 +348,12 @@
             </configuration>
           </execution>
           <execution>
-            <id>constants</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <includes>
-                <include>${Constants.java}</include>
-              </includes>
-            </configuration>
-          </execution>
-          <execution>
             <id>default-compile</id>
             <phase>compile</phase>
             <goals>
               <goal>compile</goal>
             </goals>
             <configuration>
-              <excludes>
-                <exclude>${Constants.java}</exclude>
-              </excludes>
               <annotationProcessors>
                 <annotationProcessor>org.jruby.anno.AnnotationBinder</annotationProcessor>
               </annotationProcessors>
@@ -394,18 +364,6 @@
                 <compilerArg>-J-Xbootclasspath/p:${unsafe.jar}</compilerArg>
                 <compilerArg>-J-Xmx${jruby.compile.memory}</compilerArg>
               </compilerArgs>
-            </configuration>
-          </execution>
-          <execution>
-            <id>populators</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <includes>
-                <include>org/jruby/gen/**/*java</include>
-              </includes>
             </configuration>
           </execution>
         </executions>
@@ -434,27 +392,6 @@
               </artifactItems>
             </configuration>
           </execution>
-          <execution>
-            <id>unzip native</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <excludes>META-INF,META-INF/*</excludes>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>com.github.jnr</groupId>
-                  <artifactId>jffi</artifactId>
-                  <version>1.2.5</version>
-                  <type>jar</type>
-                  <classifier>native</classifier>
-                  <overWrite>false</overWrite>
-                  <outputDirectory>${basedir}/lib</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -462,7 +399,25 @@
         <version>2.5</version>
         <executions>
           <execution>
-            <id>clean-anno-config</id>
+            <id>default-clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>${project.build.sourceDirectory}</directory>
+                  <includes>
+                    <include>${Constants.java}</include>
+                  </includes>
+                </fileset>
+              </filesets>
+              <failOnError>false</failOnError>
+            </configuration>
+          </execution>
+          <execution>
+            <id>clean-anno-files</id>
             <phase>process-classes</phase>
             <goals>
               <goal>clean</goal>
@@ -521,7 +476,7 @@
                 </relocation>
               </relocations>
               <finalName>jruby</finalName>
-              <outputDirectory>${basedir}/lib</outputDirectory>
+              <outputDirectory>../lib</outputDirectory>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>org.jruby.Main</mainClass>
@@ -552,17 +507,18 @@
     </plugins>
     <resources>
       <resource>
-        <directory>src</directory>
+        <directory>src/main/resources</directory>
         <includes>
           <include>**/*rb</include>
         </includes>
       </resource>
       <resource>
-        <directory>src</directory>
+        <directory>src/main/resources</directory>
         <includes>
           <include>META-INF/**/*</include>
         </includes>
       </resource>
+<!--
       <resource>
         <directory>${project.basedir}/resources</directory>
         <includes>
@@ -570,21 +526,230 @@
         </includes>
         <targetPath>${tzdata.build.directory}</targetPath>
       </resource>
-      <resource>
-        <directory>${project.basedir}/resources</directory>
-        <includes>
-          <include>${Constants.java}</include>
-        </includes>
-        <targetPath>${generated.sources}</targetPath>
-        <filtering>true</filtering>
-      </resource>
+-->
     </resources>
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>
+                      properties-maven-plugin
+                    </artifactId>
+                    <versionRange>
+                      [1.0-alpha-2,)
+                    </versionRange>
+                    <goals>
+                      <goal>
+                        read-project-properties
+                      </goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>
+                      build-helper-maven-plugin
+                    </artifactId>
+                    <versionRange>[1.8,)</versionRange>
+                    <goals>
+                      <goal>add-source</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>
+                      exec-maven-plugin
+                    </artifactId>
+                    <versionRange>
+                      [1.2.1,)
+                    </versionRange>
+                    <goals>
+                      <goal>exec</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>
+                      org.apache.maven.plugins
+                    </groupId>
+                    <artifactId>
+                      maven-dependency-plugin
+                    </artifactId>
+                    <versionRange>[2.8,)</versionRange>
+                    <goals>
+                      <goal>copy</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>
+                      org.apache.maven.plugins
+                    </groupId>
+                    <artifactId>
+                      maven-clean-plugin
+                    </artifactId>
+                    <versionRange>[2.5,)</versionRange>
+                    <goals>
+                      <goal>clean</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
   <profiles>
     <profile>
+      <id>constants</id>
+      <activation>
+        <file>
+          <missing>src/main/java/org/jruby/runtime/Constants.java</missing>
+        </file>
+      </activation>
+      <build>
+        <resources>
+          <resource>
+            <directory>${project.basedir}/src/main/resources</directory>
+            <includes>
+              <include>${Constants.java}</include>
+            </includes>
+            <targetPath>${project.build.sourceDirectory}</targetPath>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
+        <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <id>jruby-revision</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+            <configuration>
+              <shortRevisionLength>7</shortRevisionLength>
+              <buildNumberPropertyName>jruby.revision</buildNumberPropertyName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>populators</id>
+      <activation>
+        <file>
+          <missing>target/classes/org/jruby/gen</missing>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>populators</id>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>compile</goal>
+                </goals>
+                <configuration>
+                  <compilerArgs>
+                    <compilerArg>-XDignore.symbol.file=true</compilerArg>
+                    <compilerArg>-J-Duser.language=en</compilerArg>
+                    <compilerArg>-J-Dfile.encoding=UTF-8</compilerArg>
+                    <compilerArg>-J-Xbootclasspath/p:${unsafe.jar}</compilerArg>
+                    <compilerArg>-J-Xmx${jruby.compile.memory}</compilerArg>
+                  </compilerArgs>
+                  <!-- eclipse does not like this on compile execution -->
+                  <!--includes>
+                    <include>org/jruby/gen/**/*java</include>
+                  </includes-->
+                </configuration>
+              </execution>
+            </executions>
+        </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>native</id>
+      <activation>
+        <file>
+          <missing>../lib/jni</missing>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unzip native</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <excludes>META-INF,META-INF/*</excludes>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.github.jnr</groupId>
+                  <artifactId>jffi</artifactId>
+                  <version>1.2.5</version>
+                  <type>jar</type>
+                  <classifier>native</classifier>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>..//lib</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
       <id>test</id>
       <properties>
-      	<maven.test.skip>false</maven.test.skip>
+        <maven.test.skip>false</maven.test.skip>
       </properties>
     </profile>
     <profile>
