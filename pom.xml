@@ -3,13 +3,58 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jruby</groupId>
-  <artifactId>jruby-base</artifactId>
+  <artifactId>jruby-parent</artifactId>
   <version>1.7.5.dev</version>
   <packaging>pom</packaging>
 
+  <name>JRuby</name>
+
   <modules>
     <module>ext</module>
-    <module>jruby-dev</module>
+    <module>jruby-core</module>
   </modules>
 
+  <build>
+    <defaultGoal>package</defaultGoal>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>docs</id>
+      <modules>
+        <module>docs</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>main</id>
+      <modules>
+        <module>maven</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>complete</id>
+      <modules>
+        <module>maven</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>rake-plugin</id>
+      <modules>
+        <module>maven</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>dist</id>
+      <modules>
+        <module>maven</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>all</id>
+      <modules>
+        <module>docs</module>
+        <module>maven</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

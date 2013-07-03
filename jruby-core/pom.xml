@@ -1,14 +1,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.jruby</groupId>
-  <artifactId>jruby</artifactId>
-  <version>1.7.5.dev</version>
-  <name><![CDATA[JRuby]]></name>
+
+  <parent>
+    <groupId>org.jruby</groupId>
+    <artifactId>jruby-parent</artifactId>
+    <version>1.7.5.dev</version>
+  </parent>
+  <artifactId>jruby-core</artifactId>
   <packaging>jar</packaging>
+
+  <name>JRuby Core</name>
+
   <repositories>
     <repository>
       <id>localrepo</id>
-      <url>file:./../localrepo</url>
+      <url>file:${basedir}/../localrepo</url>
     </repository>
     <repository>
       <id>rubygems-releases</id>
@@ -36,13 +42,6 @@
       <artifactId>junit</artifactId>
       <version>4.11</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jruby</groupId>
-      <artifactId>readline</artifactId>
-      <version>1.0-SNAPSHOT</version>
-      <type>jar</type>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jruby.joni</groupId>
@@ -154,6 +153,7 @@
       <artifactId>yydebug</artifactId>
       <version>1.0</version>
       <type>jar</type>
+      <!-- provided ???? -->
     </dependency>
     <dependency>
       <groupId>org.apache.bsf</groupId>
@@ -228,9 +228,6 @@
     <tzdata.scope>provided</tzdata.scope>
   </properties>
   <build>
-<!--    <sourceDirectory>src</sourceDirectory>
-    <outputDirectory>build/classes/jruby</outputDirectory>
--->
     <testSourceDirectory>test</testSourceDirectory>
     <defaultGoal>package</defaultGoal>
     <plugins>
@@ -247,8 +244,8 @@
             </goals>
             <configuration>
               <files>
-                <file>../default.build.properties</file>
-                <file>${basedir}/build.properties</file>
+                <file>${basedir}/../default.build.properties</file>
+                <file>${basedir}/../build.properties</file>
               </files>
               <quiet>true</quiet>
             </configuration>
@@ -260,20 +257,6 @@
         <artifactId>build-helper-maven-plugin</artifactId>
         <version>1.8</version>
         <executions>
-<!--
-          <execution>
-            <id>add-generated-sources</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${generated.sources}</source>
-              </sources>
-            </configuration>
-          </execution>
--->
           <execution>
             <id>add-populators</id>
             <phase>compile</phase>
@@ -364,6 +347,38 @@
                 <compilerArg>-J-Xbootclasspath/p:${unsafe.jar}</compilerArg>
                 <compilerArg>-J-Xmx${jruby.compile.memory}</compilerArg>
               </compilerArgs>
+            </configuration>
+          </execution>
+          <execution>
+            <id>populators</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <compilerArgs>
+                <compilerArg>-XDignore.symbol.file=true</compilerArg>
+                <compilerArg>-J-Duser.language=en</compilerArg>
+                <compilerArg>-J-Dfile.encoding=UTF-8</compilerArg>
+                <compilerArg>-J-Xbootclasspath/p:${unsafe.jar}</compilerArg>
+                <compilerArg>-J-Xmx${jruby.compile.memory}</compilerArg>
+              </compilerArgs>
+              <includes>
+                <include>org/jruby/gen/**/*.java</include>
+              </includes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>eclipse-hack</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <skipMain>true</skipMain>
+              <includes>
+                <include>**/*.java</include>
+              </includes>
             </configuration>
           </execution>
         </executions>
@@ -476,7 +491,7 @@
                 </relocation>
               </relocations>
               <finalName>jruby</finalName>
-              <outputDirectory>../lib</outputDirectory>
+              <outputDirectory>${project.parent.basedir}/lib</outputDirectory>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>org.jruby.Main</mainClass>
@@ -493,7 +508,7 @@
         <configuration>
           <systemProperties>
             <jruby.compat.version>1.9</jruby.compat.version>
-            <jruby.home>${basedir}</jruby.home>
+            <jruby.home>${basedir}/..</jruby.home>
           </systemProperties>
           <testFailureIgnore>true</testFailureIgnore>
           <argLine>-XX:MaxPermSize=${jruby.test.memory.permgen}</argLine>
@@ -518,15 +533,6 @@
           <include>META-INF/**/*</include>
         </includes>
       </resource>
-<!--
-      <resource>
-        <directory>${project.basedir}/resources</directory>
-        <includes>
-          <include>.empty</include>
-        </includes>
-        <targetPath>${tzdata.build.directory}</targetPath>
-      </resource>
--->
     </resources>
     <pluginManagement>
       <plugins>
@@ -672,43 +678,6 @@
       </build>
     </profile>
     <profile>
-      <id>populators</id>
-      <activation>
-        <file>
-          <missing>target/classes/org/jruby/gen</missing>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>populators</id>
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>compile</goal>
-                </goals>
-                <configuration>
-                  <compilerArgs>
-                    <compilerArg>-XDignore.symbol.file=true</compilerArg>
-                    <compilerArg>-J-Duser.language=en</compilerArg>
-                    <compilerArg>-J-Dfile.encoding=UTF-8</compilerArg>
-                    <compilerArg>-J-Xbootclasspath/p:${unsafe.jar}</compilerArg>
-                    <compilerArg>-J-Xmx${jruby.compile.memory}</compilerArg>
-                  </compilerArgs>
-                  <!-- eclipse does not like this on compile execution -->
-                  <!--includes>
-                    <include>org/jruby/gen/**/*java</include>
-                  </includes-->
-                </configuration>
-              </execution>
-            </executions>
-        </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>native</id>
       <activation>
         <file>
@@ -736,7 +705,7 @@
                   <type>jar</type>
                   <classifier>native</classifier>
                   <overWrite>false</overWrite>
-                  <outputDirectory>..//lib</outputDirectory>
+                  <outputDirectory>${basedir}/../lib</outputDirectory>
                 </artifactItem>
               </artifactItems>
             </configuration>

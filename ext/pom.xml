@@ -7,6 +7,8 @@
   <version>1.7.5.dev</version>
   <packaging>pom</packaging>
 
+  <name>JRuby Ext</name>
+
   <modules>
     <module>openssl</module>
     <module>readline</module>
